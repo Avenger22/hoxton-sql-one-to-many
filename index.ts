@@ -42,6 +42,10 @@ DELETE FROM museums WHERE id = ?;
 const deleteMuseumWorks = db.prepare(`
 DELETE FROM works WHERE museumId = ?;
 `)
+
+const updateMuseumWorks = db.prepare(`
+UPDATE works SET name = ?, picture = ?, museumId = ? WHERE id = ?;
+`)
 // #endregion
 
 // #region 'End points Rest API'
@@ -97,10 +101,11 @@ app.get("/museums/:id", (req, res) => {
 app.post('/museums', (req, res) => {
 
   // creating an museum is still the same as last week
-  const { name, image } = req.body
-  const info = createMuseum.run(name, image)
+  const { name, city } = req.body
+  const info = createMuseum.run(name, city)
 
   // const errors = []
+
   // if (typeof name !== 'string') errors.push()
 
   if (info.changes > 0) {
@@ -117,8 +122,8 @@ app.post('/museums', (req, res) => {
 app.post('/works', (req, res) => {
 
   // to create an work, we need to know the museumId
-  const { name, city, museumId } = req.body
-  const info = createWork.run(name, city, museumId)
+  const { name, picture, museumId } = req.body
+  const info = createWork.run(name, picture, museumId)
 
   // const errors = []
 
@@ -127,6 +132,28 @@ app.post('/works', (req, res) => {
   if (info.changes > 0) {
     const work = getWorkById.get(info.lastInsertRowid)
     res.send(work)
+  } 
+  
+  else {
+    res.send({ error: 'Something went wrong.' })
+  }
+
+})
+
+app.patch('/works/:id', (req, res) => {
+
+  const id = req.params.id;
+
+  // to create an work, we need to know the museumId
+  const { name, picture, museumId } = req.body
+  const info = updateMuseumWorks.run(name, picture, museumId, id)
+  const updatedWork = getWorkById.get(id)
+
+  // const errors = []
+  // if (typeof name !== 'string') errors.push()
+
+  if (info.changes > 0) {
+    res.send(updatedWork)
   } 
   
   else {
