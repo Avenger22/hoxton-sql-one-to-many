@@ -15,7 +15,7 @@ const db = new Database("./data.db", {
 
 // #region 'Sql queries'
 const getAllWorks = db.prepare(`
-SELECT id,name,picture FROM works;
+SELECT * FROM works;
 `);
 
 const getAllMuseums = db.prepare(`
@@ -32,7 +32,7 @@ SELECT * FROM museums WHERE id = ?
 `);
 
 const getWorkById = db.prepare(`
-SELECT id,name,picture FROM works WHERE id = ?
+SELECT * FROM works WHERE id = ?
 `);
 
 const deleteMuseum = db.prepare(`
@@ -54,8 +54,10 @@ app.get("/works", (req, res) => {
   const works = getAllWorks.all();
   
   for (const work of works) {
-    const museum = getMuseumById.get(work.id);
+
+    const museum = getMuseumById.get(work.museumId);
     work.museum = museum;
+
   }
 
   res.send(works);
@@ -67,7 +69,7 @@ app.get("/works/:id", (req, res) => {
   const id = req.params.id;
   const work = getWorkById.get(id);
   
-  const museum = getMuseumById.get(work.id);
+  const museum = getMuseumById.get(work.museumId);
   work.museum = museum;
   res.send(work);
 
@@ -143,19 +145,18 @@ app.post('/works', (req, res) => {
 app.patch('/works/:id', (req, res) => {
 
   const id = req.params.id;
-
-  // to create an work, we need to know the museumId
   const { name, picture, museumId } = req.body
-  const info = updateMuseumWorks.run(name, picture, museumId, id)
-  const updatedWork = getWorkById.get(id)
 
-  // const errors = []
-  // if (typeof name !== 'string') errors.push()
+  const info = updateMuseumWorks.run(name, picture, museumId, id)
+  const updatedWork = getWorkById.get(Number(id))
+
+  const museum = getMuseumById.get(updatedWork.museumId)
 
   if (info.changes > 0) {
-    res.send(updatedWork)
-  } 
-  
+
+    res.send({ ...updatedWork, museum })
+  }
+
   else {
     res.send({ error: 'Something went wrong.' })
   }

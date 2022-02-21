@@ -7,7 +7,23 @@ const db = new Database('./data.db', {
 // #endregion
 
 // #region 'Mock data'
-const museums = [
+type Museum = {
+  id: number,
+  name: string,
+  city: string
+}
+
+type Work = {
+  id: number,
+  name: string,
+  picture: string,
+  museumId: number
+}
+
+type MuseumData = Omit<Museum, 'id'>
+type WorkData = Omit<Work, 'id'>
+
+const museums:MuseumData[] = [
   {
     name: 'Archaelogical Museum of Egnatia',
     city:'Durres'
@@ -22,7 +38,7 @@ const museums = [
   }
 ]
 
-const works = [
+const works:WorkData[] = [
   {
     name: 'Sword of Scanderbeg',
     picture: "museum.jpg",
