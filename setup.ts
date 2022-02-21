@@ -1,9 +1,12 @@
+// #region 'Importing and cofig'
 import Database from 'better-sqlite3'
 
 const db = new Database('./data.db', {
   verbose: console.log
 })
+// #endregion
 
+// #region 'Mock data'
 const museums = [
   {
     name: 'Archaelogical Museum of Egnatia',
@@ -46,7 +49,9 @@ const works = [
     museumId: 3
   }
 ]
+// #endregion
 
+// #region 'Droping and creating tables'
 const dropMuseums = db.prepare(`DROP TABLE IF EXISTS museums;`)
 const dropWorks = db.prepare(`DROP TABLE IF EXISTS works;`)
 
@@ -74,7 +79,9 @@ CREATE TABLE IF NOT EXISTS works (
 
 createWorks.run()
 createMuseums.run()
+// #endregion
 
+// #region 'Creating rows of the tables'
 export const createMuseum = db.prepare(`
 INSERT INTO museums (name, city) VALUES (?, ?);
 `)
@@ -90,3 +97,4 @@ for (const museum of museums) {
 for (const work of works) {
   createWork.run(work.name, work.picture, work.museumId)
 }
+// #endregion
