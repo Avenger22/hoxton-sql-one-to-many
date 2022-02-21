@@ -75,11 +75,11 @@ CREATE TABLE IF NOT EXISTS works (
 createWorks.run()
 createMuseums.run()
 
-const createMuseum = db.prepare(`
+export const createMuseum = db.prepare(`
 INSERT INTO museums (name, city) VALUES (?, ?);
 `)
 
-const createWork = db.prepare(`
+export const createWork = db.prepare(`
 INSERT INTO works (name, picture, museumId) VALUES (?, ?, ?);
 `)
 

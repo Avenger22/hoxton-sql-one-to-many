@@ -2,6 +2,7 @@
 import express from "express";
 import Database from "better-sqlite3";
 import cors from "cors";
+import {createWork, createMuseum} from "./setup"
 
 const app = express();
 app.use(cors());
@@ -33,6 +34,14 @@ SELECT * FROM museums WHERE id = ?
 const getWorkById = db.prepare(`
 SELECT id,name,picture FROM works WHERE id = ?
 `);
+
+const deleteMuseum = db.prepare(`
+DELETE FROM museums WHERE id = ?;
+`)
+
+const deleteMuseumWorks = db.prepare(`
+DELETE FROM works WHERE museumId = ?;
+`)
 // #endregion
 
 // #region 'End points Rest API'
@@ -84,6 +93,64 @@ app.get("/museums/:id", (req, res) => {
   res.send(museum);
 
 });
+
+app.post('/museums', (req, res) => {
+
+  // creating an museum is still the same as last week
+  const { name, image } = req.body
+  const info = createMuseum.run(name, image)
+
+  // const errors = []
+  // if (typeof name !== 'string') errors.push()
+
+  if (info.changes > 0) {
+    const museum = getMuseumById.get(info.lastInsertRowid)
+    res.send(museum)
+  } 
+  
+  else {
+    res.send({ error: 'Something went wrong.' })
+  }
+
+})
+
+app.post('/works', (req, res) => {
+
+  // to create an work, we need to know the museumId
+  const { name, city, museumId } = req.body
+  const info = createWork.run(name, city, museumId)
+
+  // const errors = []
+
+  // if (typeof name !== 'string') errors.push()
+
+  if (info.changes > 0) {
+    const work = getWorkById.get(info.lastInsertRowid)
+    res.send(work)
+  } 
+  
+  else {
+    res.send({ error: 'Something went wrong.' })
+  }
+
+})
+
+app.delete('/museums/:id', (req, res) => {
+
+  const id = req.params.id
+
+  deleteMuseumWorks.run(id)
+  const info = deleteMuseum.run(id)
+
+  if (info.changes === 0) {
+    res.status(404).send({ error: 'museum not found.' })
+  } 
+  
+  else {
+    res.send({ message: 'museum deleted.' })
+  }
+
+})
 // #endregion
 
 app.listen(4000, () => console.log(`Listening on: http://localhost:4000`));
